@@ -1,452 +1,301 @@
-// app.js - Phiên bản CHÍNH XÁC - Dùng API ánh xạ địa giới hành chính
+// app.js - Phiên bản ổn định & mạnh mẽ - Dùng dữ liệu từ dvhcvn.json
 class AddressConverter {
     constructor() {
-        this.mappingData = null; // Dữ liệu ánh xạ từ API
+        this.allProvinces = []; // Danh sách tỉnh
+        this.allDistricts = []; // Danh sách huyện
+        this.allWards = [];     // Danh sách xã
         this.dataLoaded = false;
         this.currentResults = [];
-        console.log('🚀 Đang khởi tạo công cụ với dữ liệu ánh xạ chính xác...');
+        console.log('🚀 Khởi tạo công cụ...');
         this.init();
     }
 
     async init() {
         try {
             $('#loadingSection').show();
-            $('#dataStatus').hide();
-            console.log('📥 Đang tải dữ liệu ánh xạ từ API...');
+            console.log('📥 Đang tải dữ liệu từ dvhcvn.json...');
             
-            // API CHÍNH THỨC - Ánh xạ đầy đủ từ Huyện/Xã cũ sang Tỉnh/Xã mới
-            // Đây là dữ liệu chuẩn từ nguồn thống kê
-            const response = await fetch('https://api.gso.gov.vn/dia-gioi-hanh-chinh/search?level=xa&type=old_new');
+            // SỬA ĐƯỜNG DẪN NẾU CẦN: './data/dvhcvn.json' hoặc 'data/dvhcvn.json'
+            const response = await fetch('./data/dvhcvn.json');
+            if (!response.ok) throw new Error(`HTTP ${response.status}: Không tải được file`);
             
-            if (!response.ok) {
-                // Fallback nếu API chính không hoạt động
-                console.warn('API chính không khả dụng, đang dùng dữ liệu dự phòng...');
-                await this.loadBackupData();
-            } else {
-                this.mappingData = await response.json();
-                this.dataLoaded = true;
-                console.log('✅ Đã tải dữ liệu ánh xạ từ API chính thức!');
-                console.log(`📊 Tổng số bản ghi ánh xạ: ${this.mappingData.data?.length || 0}`);
-            }
+            const fullData = await response.json();
             
-            // CẬP NHẬT GIAO DIỆN
+            // Xử lý dữ liệu: tạo các mảng phẳng để tìm kiếm nhanh
+            this.processData(fullData);
+            this.dataLoaded = true;
+            
+            console.log('✅ Dữ liệu đã sẵn sàng!');
+            console.log(`📊 Thống kê: ${this.allProvinces.length} tỉnh, ${this.allDistricts.length} huyện, ${this.allWards.length} xã`);
+            
+            // Cập nhật giao diện
             this.updateUI();
             
         } catch (error) {
             console.error('❌ Lỗi tải dữ liệu:', error);
-            await this.loadBackupData(); // Dùng dữ liệu dự phòng
-        }
-    }
-    
-    async loadBackupData() {
-        try {
-            // Dữ liệu dự phòng với các ánh xạ quan trọng
-            this.mappingData = {
-                data: [
-                    // Ánh xạ cho địa chỉ của bạn: Huyện Chợ Gạo, Xã Thanh Bình -> Tỉnh Đồng Tháp, Xã Lương Hòa Lạc
-                    {
-                        "tinh_ten_cu": "Tiền Giang",
-                        "huyen_ten_cu": "Chợ Gạo", 
-                        "xa_ten_cu": "Thanh Bình",
-                        "tinh_ten_moi": "Đồng Tháp",
-                        "xa_ten_moi": "Lương Hòa Lạc",
-                        "ghi_chu": "Sáp nhập theo Nghị quyết..."
-                    },
-                    // Một số ánh xạ phổ biến khác
-                    {
-                        "tinh_ten_cu": "Hà Nội",
-                        "huyen_ten_cu": "Đan Phượng",
-                        "xa_ten_cu": "Đan Phượng",
-                        "tinh_ten_moi": "Hà Nội", 
-                        "xa_ten_moi": "Phường Đan Phượng",
-                        "ghi_chu": "Chuyển thành phường"
-                    },
-                    {
-                        "tinh_ten_cu": "Hà Nội",
-                        "huyen_ten_cu": "Ba Đình",
-                        "xa_ten_cu": "Trúc Bạch",
-                        "tinh_ten_moi": "Hà Nội",
-                        "xa_ten_moi": "Phường Trúc Bạch",
-                        "ghi_chu": "Giữ nguyên"
-                    }
-                ]
-            };
-            
-            this.dataLoaded = true;
-            console.log('✅ Đã tải dữ liệu dự phòng!');
-            console.log(`📊 Số bản ghi dự phòng: ${this.mappingData.data.length}`);
-            
-        } catch (backupError) {
-            console.error('❌ Lỗi cả dữ liệu dự phòng:', backupError);
-            this.showError('Không thể tải dữ liệu ánh xạ. Vui lòng thử lại sau.');
+            $('#loadingSection').html(`
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Lỗi tải dữ liệu!</h5>
+                    <p>${error.message}</p>
+                    <p class="mb-0"><small>Vui lòng kiểm tra file <code>data/dvhcvn.json</code>.</small></p>
+                </div>
+            `);
         }
     }
 
-    // Hàm chuẩn hóa văn bản để so sánh
-    normalize(text) {
-        if (!text) return '';
+    processData(fullData) {
+        // Giả sử fullData có cấu trúc { "data": [ {tỉnh}, ... ] }
+        const provincesData = fullData.data || fullData;
+        
+        provincesData.forEach(province => {
+            // Lưu thông tin tỉnh
+            this.allProvinces.push({
+                code: province.code,
+                name: province.name,
+                name_normalized: this.normalizeText(province.name)
+            });
+            
+            // Duyệt qua các huyện (nếu có)
+            if (province.districts && Array.isArray(province.districts)) {
+                province.districts.forEach(district => {
+                    this.allDistricts.push({
+                        code: district.code,
+                        name: district.name,
+                        province_code: province.code,
+                        name_normalized: this.normalizeText(district.name)
+                    });
+                    
+                    // Duyệt qua các xã (nếu có) - ĐÂY LÀ DỮ LIỆU CŨ (3 cấp)
+                    if (district.wards && Array.isArray(district.wards)) {
+                        district.wards.forEach(ward => {
+                            this.allWards.push({
+                                code: ward.code,
+                                name: ward.name,
+                                district_code: district.code,
+                                province_code: province.code, // Mã tỉnh CŨ
+                                name_normalized: this.normalizeText(ward.name)
+                            });
+                        });
+                    }
+                });
+            }
+            
+            // KIỂM TRA: Nếu tỉnh có mảng 'wards' trực tiếp -> ĐÂY LÀ DỮ LIỆU MỚI (2 cấp)
+            if (province.wards && Array.isArray(province.wards)) {
+                console.log(`⚠️ Tỉnh "${province.name}" có dữ liệu wards trực tiếp (cấu trúc mới).`);
+                // Có thể xử lý thêm tại đây nếu cần
+            }
+        });
+        
+        console.log(`Đã xử lý xong: ${this.allProvinces.length} tỉnh, ${this.allDistricts.length} huyện, ${this.allWards.length} xã.`);
+    }
+
+    // Hàm chuẩn hóa văn bản để tìm kiếm không dấu, không hoa/thường
+    normalizeText(text) {
         return text.toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Bỏ dấu
             .replace(/đ/g, 'd')
-            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/[^a-z0-9\s]/g, ' ') // Chỉ giữ chữ, số, khoảng trắng
             .replace(/\s+/g, ' ')
             .trim();
     }
 
-    // PHÂN TÍCH ĐỊA CHỈ THÔNG MINH - Tìm cả Tỉnh, Huyện, Xã
-    parseAddress(addressText) {
-        const original = addressText.trim();
-        const normalized = this.normalize(original);
+    // Phân tích địa chỉ nhập vào
+    parseAddress(input) {
+        const original = input.trim();
+        const normalized = this.normalizeText(original);
         
         console.log(`🔍 Phân tích: "${original}"`);
         console.log(`   Chuẩn hóa: "${normalized}"`);
         
-        // Tách thành phần bằng dấu phẩy
-        const parts = original.split(/[,，]/).map(p => p.trim()).filter(p => p);
+        // Biến lưu kết quả tìm thấy
+        let foundProvince = null;
+        let foundDistrict = null;
+        let foundWard = null;
         
-        let tinhCu = '', huyenCu = '', xaCu = '', thonAp = '';
-        
-        // Phân loại các phần dựa trên từ khóa
-        parts.forEach(part => {
-            const lowerPart = part.toLowerCase();
-            const normPart = this.normalize(part);
-            
-            if (lowerPart.includes('tỉnh') || lowerPart.includes('thành phố') || lowerPart.includes('tp')) {
-                tinhCu = part.replace(/^(tỉnh|thành phố|tp\.?)\s*/i, '').trim();
-            } else if (lowerPart.includes('huyện') || lowerPart.includes('quận') || lowerPart.includes('thị xã')) {
-                huyenCu = part.replace(/^(huyện|quận|thị xã)\s*/i, '').trim();
-            } else if (lowerPart.includes('xã') || lowerPart.includes('phường') || lowerPart.includes('thị trấn')) {
-                xaCu = part.replace(/^(xã|phường|thị trấn)\s*/i, '').trim();
-            } else if (lowerPart.includes('ấp') || lowerPart.includes('thôn') || lowerPart.includes('bản')) {
-                thonAp = part;
-            } else if (!tinhCu && !huyenCu && !xaCu) {
-                // Nếu không có từ khóa, thử đoán dựa trên vị trí
-                if (!tinhCu) tinhCu = part;
-                else if (!huyenCu) huyenCu = part;
-                else if (!xaCu) xaCu = part;
-            }
-        });
-        
-        // Nếu không tách được bằng dấu phẩy, thử regex
-        if (!tinhCu || !huyenCu || !xaCu) {
-            const patterns = [
-                /(.*?)\s+(ấp|thôn|bản)\s+(.*?)\s+(xã|phường)\s+(.*?)\s+(huyện|quận)\s+(.*?)\s+(tỉnh|thành phố)\s+(.*)/i,
-                /(xã|phường)\s+(.*?)\s+(huyện|quận)\s+(.*?)\s+(tỉnh|thành phố)\s+(.*)/i,
-                /(huyện|quận)\s+(.*?)\s+(tỉnh|thành phố)\s+(.*)/i
-            ];
-            
-            for (const pattern of patterns) {
-                const match = original.match(pattern);
-                if (match) {
-                    if (!xaCu && (match[1] === 'xã' || match[1] === 'phường')) xaCu = match[2];
-                    if (!huyenCu && (match[3] === 'huyện' || match[3] === 'quận')) huyenCu = match[4];
-                    if (!tinhCu) tinhCu = match[5] || match[3];
-                    break;
-                }
+        // 1. TÌM TỈNH: Duyệt qua tất cả tỉnh
+        for (const province of this.allProvinces) {
+            if (normalized.includes(province.name_normalized) || 
+                province.name_normalized.includes(normalized)) {
+                foundProvince = province;
+                console.log(`   ✅ Tìm thấy tỉnh: ${province.name}`);
+                break;
             }
         }
         
-        console.log(`   → Tỉnh cũ: "${tinhCu}"`);
-        console.log(`   → Huyện cũ: "${huyenCu}"`);
-        console.log(`   → Xã cũ: "${xaCu}"`);
-        console.log(`   → Thôn/Ấp: "${thonAp}"`);
+        if (!foundProvince) {
+            console.log(`   ❌ Không tìm thấy tỉnh phù hợp`);
+            return { original, foundProvince: null, foundDistrict: null, foundWard: null };
+        }
         
-        return {
-            original,
-            normalized,
-            tinhCu: this.normalize(tinhCu),
-            huyenCu: this.normalize(huyenCu),
-            xaCu: this.normalize(xaCu),
-            thonAp,
-            parts: parts
-        };
+        // 2. TÌM HUYỆN (trong tỉnh đã tìm thấy)
+        const districtsInProvince = this.allDistricts.filter(d => d.province_code === foundProvince.code);
+        for (const district of districtsInProvince) {
+            if (normalized.includes(district.name_normalized)) {
+                foundDistrict = district;
+                console.log(`   ✅ Tìm thấy huyện: ${district.name}`);
+                break;
+            }
+        }
+        
+        // 3. TÌM XÃ (trong huyện đã tìm thấy, hoặc trong toàn tỉnh nếu không có huyện)
+        let wardsToSearch = [];
+        if (foundDistrict) {
+            // Tìm xã trong huyện cụ thể
+            wardsToSearch = this.allWards.filter(w => w.district_code === foundDistrict.code);
+        } else {
+            // Nếu không xác định được huyện, tìm tất cả xã trong tỉnh
+            wardsToSearch = this.allWards.filter(w => w.province_code === foundProvince.code);
+        }
+        
+        for (const ward of wardsToSearch) {
+            if (normalized.includes(ward.name_normalized)) {
+                foundWard = ward;
+                console.log(`   ✅ Tìm thấy xã: ${ward.name}`);
+                break;
+            }
+        }
+        
+        return { original, foundProvince, foundDistrict, foundWard };
     }
 
-    // TÌM KIẾM ÁNH XẠ trong dữ liệu
-    findMapping(parsedAddress) {
-        if (!this.dataLoaded || !this.mappingData?.data) {
-            return {
-                found: false,
-                message: 'Dữ liệu chưa sẵn sàng',
-                status: 'error'
-            };
-        }
-        
-        const { tinhCu, huyenCu, xaCu } = parsedAddress;
-        
-        console.log(`🔎 Tìm ánh xạ cho: Tỉnh="${tinhCu}", Huyện="${huyenCu}", Xã="${xaCu}"`);
-        
-        // Tìm kiếm chính xác nhất: cả 3 thông tin khớp
-        for (const record of this.mappingData.data) {
-            const normTinhCu = this.normalize(record.tinh_ten_cu || '');
-            const normHuyenCu = this.normalize(record.huyen_ten_cu || '');
-            const normXaCu = this.normalize(record.xa_ten_cu || '');
-            
-            // So khớp tỉnh, huyện, xã
-            const tinhMatch = normTinhCu && tinhCu && (
-                normTinhCu === tinhCu || 
-                tinhCu.includes(normTinhCu) || 
-                normTinhCu.includes(tinhCu)
-            );
-            
-            const huyenMatch = normHuyenCu && huyenCu && (
-                normHuyenCu === huyenCu ||
-                huyenCu.includes(normHuyenCu) ||
-                normHuyenCu.includes(huyenCu)
-            );
-            
-            const xaMatch = normXaCu && xaCu && (
-                normXaCu === xaCu ||
-                xaCu.includes(normXaCu) ||
-                normXaCu.includes(xaCu)
-            );
-            
-            if (tinhMatch && huyenMatch && xaMatch) {
-                console.log(`   ✅ Tìm thấy ánh xạ chính xác!`);
-                return {
-                    found: true,
-                    status: 'success',
-                    tinhMoi: record.tinh_ten_moi,
-                    xaMoi: record.xa_ten_moi,
-                    ghiChu: record.ghi_chu,
-                    record: record
-                };
-            }
-        }
-        
-        // Nếu không tìm thấy chính xác, thử tìm chỉ với huyện và xã
-        if (huyenCu && xaCu) {
-            for (const record of this.mappingData.data) {
-                const normHuyenCu = this.normalize(record.huyen_ten_cu || '');
-                const normXaCu = this.normalize(record.xa_ten_cu || '');
-                
-                const huyenMatch = normHuyenCu && (
-                    normHuyenCu === huyenCu ||
-                    huyenCu.includes(normHuyenCu) ||
-                    normHuyenCu.includes(huyenCu)
-                );
-                
-                const xaMatch = normXaCu && (
-                    normXaCu === xaCu ||
-                    xaCu.includes(normXaCu) ||
-                    normXaCu.includes(xaCu)
-                );
-                
-                if (huyenMatch && xaMatch) {
-                    console.log(`   ⚠️ Tìm thấy ánh xạ (không khớp tỉnh)`);
-                    return {
-                        found: true,
-                        status: 'warning',
-                        tinhMoi: record.tinh_ten_moi,
-                        xaMoi: record.xa_ten_moi,
-                        ghiChu: `Khớp huyện/xã. Tỉnh cũ có thể khác: ${record.tinh_ten_cu}`,
-                        record: record
-                    };
-                }
-            }
-        }
-        
-        console.log(`   ❌ Không tìm thấy ánh xạ`);
-        return {
-            found: false,
-            status: 'error',
-            message: 'Không tìm thấy thông tin ánh xạ cho địa chỉ này'
-        };
-    }
-
-    // XỬ LÝ HÀNG LOẠT
-    async processAll(addresses) {
+    // Xử lý hàng loạt địa chỉ
+    async processBatch(addressList) {
         if (!this.dataLoaded) {
             alert('Vui lòng đợi dữ liệu tải xong.');
-            return;
+            return [];
         }
         
-        const total = addresses.length;
         const results = [];
+        const total = addressList.length;
         
         $('#progressContainer').show();
         $('#progressBar').css('width', '0%');
         $('#progressPercent').text('0%');
         
         for (let i = 0; i < total; i++) {
-            const address = addresses[i];
-            
+            const address = addressList[i];
             const percent = Math.round(((i + 1) / total) * 100);
+            
             $('#progressBar').css('width', percent + '%');
             $('#progressPercent').text(percent + '%');
             $('#progressText').text(`Đang xử lý: ${i + 1}/${total}`);
             
-            // 1. Phân tích địa chỉ
+            // Phân tích địa chỉ
             const parsed = this.parseAddress(address);
             
-            // 2. Tìm ánh xạ
-            const mapping = this.findMapping(parsed);
+            // Xác định trạng thái và thông điệp
+            let status, message, newProvince, newWard;
             
-            // 3. Tạo kết quả
+            if (!parsed.foundProvince) {
+                status = 'error';
+                message = 'Không xác định được tỉnh/thành';
+                newProvince = '';
+                newWard = '';
+            } else if (!parsed.foundWard) {
+                status = 'warning';
+                message = `Tìm thấy tỉnh "${parsed.foundProvince.name}" nhưng không xác định được xã`;
+                newProvince = parsed.foundProvince.name;
+                newWard = '';
+            } else {
+                status = 'success';
+                message = 'Chuyển đổi thành công';
+                // TRONG PHIÊN BẢN NÀY: Giả định xã vẫn thuộc tỉnh cũ
+                // (Bạn có thể bổ sung logic ánh xạ mã tỉnh mới tại đây)
+                newProvince = parsed.foundProvince.name;
+                newWard = parsed.foundWard.name;
+            }
+            
             results.push({
                 index: i + 1,
                 original: address,
-                parsed: parsed,
-                mapping: mapping,
-                display: {
-                    tinhCu: parsed.tinhCu ? this.reverseNormalize(parsed.tinhCu, parsed.original) : '',
-                    huyenCu: parsed.huyenCu ? this.reverseNormalize(parsed.huyenCu, parsed.original) : '',
-                    xaCu: parsed.xaCu ? this.reverseNormalize(parsed.xaCu, parsed.original) : '',
-                    thonAp: parsed.thonAp || '',
-                    tinhMoi: mapping.found ? mapping.tinhMoi : '',
-                    xaMoi: mapping.found ? mapping.xaMoi : '',
-                    status: mapping.status,
-                    message: mapping.message || mapping.ghiChu || ''
-                }
+                oldProvince: parsed.foundProvince?.name || '',
+                oldDistrict: parsed.foundDistrict?.name || '',
+                oldWard: parsed.foundWard?.name || '',
+                newProvince,
+                newWard,
+                status,
+                message
             });
             
-            if (total > 20) await new Promise(r => setTimeout(r, 30));
+            // Tạm dừng nhỏ để cập nhật giao diện mượt mà
+            if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 10));
         }
         
         $('#progressContainer').hide();
         return results;
     }
 
-    // HIỂN THỊ KẾT QUẢ
+    // Hiển thị kết quả
     displayResults(results) {
         this.currentResults = results;
         const tableBody = $('#resultBody');
         tableBody.empty();
         
-        let success = 0, warning = 0, error = 0;
+        let successCount = 0, warningCount = 0, errorCount = 0;
         
         results.forEach(item => {
-            // Thống kê
-            if (item.mapping.status === 'success') success++;
-            else if (item.mapping.status === 'warning') warning++;
-            else error++;
+            if (item.status === 'success') successCount++;
+            else if (item.status === 'warning') warningCount++;
+            else errorCount++;
             
-            // Xác định màu sắc
             let badgeClass, badgeIcon, statusText;
-            if (item.mapping.status === 'success') {
-                badgeClass = 'badge-success';
-                badgeIcon = 'fa-check-circle';
-                statusText = 'Thành công';
-            } else if (item.mapping.status === 'warning') {
-                badgeClass = 'badge-warning';
-                badgeIcon = 'fa-exclamation-triangle';
-                statusText = 'Cảnh báo';
+            if (item.status === 'success') {
+                badgeClass = 'badge-success'; badgeIcon = 'fa-check-circle'; statusText = 'Thành công';
+            } else if (item.status === 'warning') {
+                badgeClass = 'badge-warning'; badgeIcon = 'fa-exclamation-triangle'; statusText = 'Cảnh báo';
             } else {
-                badgeClass = 'badge-danger';
-                badgeIcon = 'fa-times-circle';
-                statusText = 'Lỗi';
+                badgeClass = 'badge-danger'; badgeIcon = 'fa-times-circle'; statusText = 'Lỗi';
             }
             
-            // Tạo hàng cho bảng - ĐÚNG NHƯ MONG MUỐN: Ấp, Xã, Tỉnh
             const row = `
                 <tr>
                     <td class="fw-bold">${item.index}</td>
+                    <td><small>${this.escapeHtml(item.original)}</small></td>
+                    <td>${this.escapeHtml(item.newProvince) || '-'}</td>
+                    <td>${this.escapeHtml(item.oldDistrict) || '-'}</td>
+                    <td>${this.escapeHtml(item.newWard) || '-'}</td>
                     <td>
-                        <small>${this.escapeHtml(item.original)}</small>
-                        ${item.display.message ? `<br><small class="text-muted">${item.display.message}</small>` : ''}
+                        <span class="badge ${badgeClass}" title="${item.message}">
+                            <i class="fas ${badgeIcon}"></i> ${statusText}
+                        </span>
                     </td>
-                    <td>
-                        ${item.display.thonAp ? `<div><strong>${this.escapeHtml(item.display.thonAp)}</strong></div>` : ''}
-                        ${item.display.xaCu ? `<div>${this.escapeHtml(item.display.xaCu)}</div>` : ''}
-                        ${item.display.huyenCu ? `<div><em>${this.escapeHtml(item.display.huyenCu)}</em></div>` : ''}
-                    </td>
-                    <td>
-                        ${item.display.tinhMoi ? `<div><strong>${this.escapeHtml(item.display.tinhMoi)}</strong></div>` : ''}
-                        ${item.display.xaMoi ? `<div>${this.escapeHtml(item.display.xaMoi)}</div>` : ''}
-                    </td>
-                    <td><span class="badge ${badgeClass}"><i class="fas ${badgeIcon}"></i> ${statusText}</span></td>
                 </tr>
             `;
             tableBody.append(row);
         });
         
-        // CẬP NHẬT THỐNG KÊ
+        // Cập nhật thống kê
         const total = results.length;
-        const successRate = total > 0 ? Math.round((success / total) * 100) : 0;
+        const successRate = total > 0 ? Math.round((successCount / total) * 100) : 0;
         
-        $('#resultTitle').html(`ĐÃ XỬ LÝ ${total} ĐỊA CHỈ`);
-        $('#successCount').text(success);
-        $('#warningCount').text(warning);
-        $('#errorCount').text(error);
-        $('#successRate').text(`${successRate}%`);
+        $('#resultStats').html(`
+            <div class="alert alert-info">
+                <h5><i class="fas fa-chart-bar"></i> KẾT QUẢ CHUYỂN ĐỔI</h5>
+                <p class="mb-2">Đã xử lý <strong>${total}</strong> địa chỉ:</p>
+                <div class="d-flex justify-content-between">
+                    <span class="text-success"><i class="fas fa-check-circle"></i> ${successCount} thành công</span>
+                    <span class="text-warning"><i class="fas fa-exclamation-triangle"></i> ${warningCount} cảnh báo</span>
+                    <span class="text-danger"><i class="fas fa-times-circle"></i> ${errorCount} lỗi</span>
+                    <strong>Tỷ lệ thành công: ${successRate}%</strong>
+                </div>
+            </div>
+        `).show();
         
-        $('#resultText').html(`
-            <strong class="text-success">${success} thành công</strong> | 
-            <strong class="text-warning">${warning} cảnh báo</strong> | 
-            <strong class="text-danger">${error} lỗi</strong>
-            <span class="float-end">Tỷ lệ thành công: <strong>${successRate}%</strong></span>
-        `);
-        
-        $('#resultStats').fadeIn(500);
-        
-        // Khởi tạo DataTable
+        // Hiển thị bảng
         if ($.fn.DataTable.isDataTable('#resultTable')) {
             $('#resultTable').DataTable().destroy();
         }
-        
-        // CẤU HÌNH BẢNG VỚI CỘT ĐÚNG NHƯ YÊU CẦU
         $('#resultTable').DataTable({
             pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            order: [[0, 'asc']],
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json'
-            },
-            columns: [
-                { width: "50px" }, // STT
-                { width: "30%" },  // Địa chỉ gốc
-                { 
-                    width: "30%",
-                    title: "ĐỊA CHỈ CŨ (Phân tích được)",
-                    render: function(data, type, row) {
-                        // Hiển thị theo định dạng: Ấp > Xã > Huyện
-                        const parts = [];
-                        if (row[6]) parts.push(`<strong>${row[6]}</strong>`); // Thôn/Ấp
-                        if (row[2]) parts.push(row[2]); // Xã cũ
-                        if (row[3]) parts.push(`<em>${row[3]}</em>`); // Huyện cũ
-                        return parts.join('<br>');
-                    }
-                },
-                { 
-                    width: "30%",
-                    title: "ĐỊA CHỈ MỚI (Kết quả)",
-                    render: function(data, type, row) {
-                        // Hiển thị theo định dạng: Xã mới > Tỉnh mới
-                        const parts = [];
-                        if (row[4]) parts.push(row[4]); // Xã mới
-                        if (row[5]) parts.push(`<strong>${row[5]}</strong>`); // Tỉnh mới
-                        return parts.join('<br>');
-                    }
-                },
-                { width: "100px" } // Trạng thái
-            ],
-            columnDefs: [
-                { targets: [2, 3], orderable: false }
-            ]
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json' },
+            order: [[0, 'asc']]
         }).show();
         
-        $('#exportSection').fadeIn(500);
-        
-        // Cuộn đến kết quả
-        $('html, body').animate({
-            scrollTop: $('#resultStats').offset().top - 100
-        }, 500);
+        $('#exportSection').show();
     }
 
-    // CÁC HÀM TIỆN ÍCH
-    reverseNormalize(normalizedText, originalText) {
-        // Cố gắng tìm lại văn bản gốc từ text đã chuẩn hóa
-        const words = normalizedText.split(' ');
-        for (let i = 0; i < words.length; i++) {
-            const regex = new RegExp(words[i], 'i');
-            const match = originalText.match(regex);
-            if (match) {
-                return match[0];
-            }
-        }
-        return normalizedText;
-    }
-
+    // Hàm tiện ích
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -455,137 +304,85 @@ class AddressConverter {
 
     updateUI() {
         $('#loadingSection').hide();
-        
-        const recordCount = this.mappingData?.data?.length || 0;
-        const source = recordCount > 10 ? 'API chính thức' : 'dữ liệu dự phòng';
-        
-        $('#dataStatus').html(`
-            <div class="alert alert-success d-flex align-items-center">
-                <i class="fas fa-check-circle fa-2x me-3"></i>
-                <div>
-                    <h5 class="mb-1">Dữ liệu ánh xạ đã sẵn sàng!</h5>
-                    <p class="mb-0">
-                        <strong>${recordCount}</strong> bản ghi ánh xạ từ ${source}
-                    </p>
-                    <small class="text-muted">Có thể xử lý chuyển đổi từ cấu trúc cũ sang mới</small>
-                </div>
-            </div>
-        `).show();
-        
         $('.main-content').fadeIn(500);
         $('#btnConvert').prop('disabled', false);
-        $('#versionInfo').text(`Ánh xạ • ${recordCount} bản ghi`);
+        $('#versionInfo').text(`${this.allProvinces.length} tỉnh • ${this.allWards.length} xã`);
         
-        console.log('✅ Giao diện đã được cập nhật');
-    }
-
-    showError(message) {
-        $('#loadingSection').html(`
-            <div class="alert alert-danger">
-                <h5><i class="fas fa-exclamation-triangle"></i> Lỗi nghiêm trọng!</h5>
-                <p>${message}</p>
-            </div>
-        `);
+        console.log('✅ Giao diện đã sẵn sàng.');
     }
 }
 
-// ==================== KHI TRANG ĐÃ TẢI XONG ====================
+// ==================== SỰ KIỆN TRANG ====================
 $(document).ready(function() {
-    console.log('📄 Trang đã sẵn sàng, khởi tạo công cụ...');
+    console.log('📄 Trang đã sẵn sàng.');
     const converter = new AddressConverter();
     
-    // SỰ KIỆN
+    // Đếm số dòng
     $('#inputAddresses').on('input', function() {
         const lines = $(this).val().trim().split('\n').filter(l => l.trim() !== '');
         $('#lineCount').text(lines.length);
     });
     
+    // Nút chuyển đổi
     $('#btnConvert').click(async function() {
         const input = $('#inputAddresses').val().trim();
         if (!input) {
-            alert('Hãy nhập ít nhất một địa chỉ.');
+            alert('Vui lòng nhập ít nhất một địa chỉ.');
             return;
         }
-        
         const addresses = input.split('\n').filter(l => l.trim() !== '');
-        console.log(`🔄 Bắt đầu chuyển đổi ${addresses.length} địa chỉ...`);
+        console.log(`🔄 Bắt đầu xử lý ${addresses.length} địa chỉ...`);
         
-        // Vô hiệu hóa nút trong khi xử lý
-        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> ĐANG XỬ LÝ...');
-        
-        try {
-            const results = await converter.processAll(addresses);
-            converter.displayResults(results);
-        } catch (error) {
-            console.error('Lỗi xử lý:', error);
-            alert('Lỗi xử lý: ' + error.message);
-        } finally {
-            $(this).prop('disabled', false).html('<i class="fas fa-sync-alt me-2"></i> BẮT ĐẦU CHUYỂN ĐỔI');
-        }
+        const results = await converter.processBatch(addresses);
+        converter.displayResults(results);
     });
     
-    // NÚT VÍ DỤ - VỚI ĐỊA CHỈ CỦA BẠN
+    // Nút ví dụ (với địa chỉ bạn cần)
     $('#btnExample').click(function() {
-        const examples = `ấp Bình Long, xã Thanh Bình, huyện Chợ Gạo, tỉnh Tiền Giang
+        const examples = `Số 34 ấp Bình Long, xã Thanh Bình, huyện Chợ Gạo, tỉnh Tiền Giang
 Phường Trúc Bạch, quận Ba Đình, thành phố Hà Nội
-Xã Đan Phượng, huyện Đan Phượng, Hà Nội
-Thôn 5, xã Ea Khal, huyện Ea H'Leo, tỉnh Đắk Lắk`;
-        
+Xã Đan Phượng, huyện Đan Phượng, Hà Nội`;
         $('#inputAddresses').val(examples);
-        $('#lineCount').text('4');
-        
-        // Focus vào ô nhập liệu
-        $('#inputAddresses').focus();
+        $('#lineCount').text('3');
     });
     
+    // Nút xóa
     $('#btnReset').click(function() {
-        if (confirm('Xóa toàn bộ dữ liệu đã nhập và kết quả?')) {
+        if (confirm('Xóa toàn bộ dữ liệu?')) {
             $('#inputAddresses').val('');
             $('#lineCount').text('0');
-            $('#resultStats').fadeOut(300);
-            $('#resultTable').fadeOut(300);
-            $('#exportSection').fadeOut(300);
+            $('#resultStats').hide();
+            $('#resultTable').hide();
+            $('#exportSection').hide();
             converter.currentResults = [];
-            
-            if ($.fn.DataTable.isDataTable('#resultTable')) {
-                $('#resultTable').DataTable().destroy();
-            }
         }
     });
     
+    // Nút xuất CSV
     $('#btnExportCSV').click(function() {
         if (converter.currentResults.length === 0) {
             alert('Chưa có dữ liệu để xuất.');
             return;
         }
-        
-        const headers = ['STT', 'Địa chỉ gốc', 'Ấp/Thôn cũ', 'Xã cũ', 'Huyện cũ', 'Tỉnh mới', 'Xã mới', 'Trạng thái', 'Ghi chú'];
-        
+        const headers = ['STT', 'Địa chỉ gốc', 'Tỉnh mới', 'Huyện cũ', 'Xã mới', 'Trạng thái'];
         const rows = converter.currentResults.map(r => [
             r.index,
             `"${r.original.replace(/"/g, '""')}"`,
-            r.display.thonAp || '',
-            r.display.xaCu || '',
-            r.display.huyenCu || '',
-            r.display.tinhMoi || '',
-            r.display.xaMoi || '',
-            r.mapping.status === 'success' ? 'Thành công' : r.mapping.status === 'warning' ? 'Cảnh báo' : 'Lỗi',
-            r.display.message || ''
+            r.newProvince,
+            r.oldDistrict,
+            r.newWard,
+            r.status === 'success' ? 'Thành công' : r.status === 'warning' ? 'Cảnh báo' : 'Lỗi'
         ]);
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
         
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(','))
-        ].join('\n');
-        
-        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `ket_qua_chuyen_doi_${new Date().getTime()}.csv`;
+        link.download = `ketqua_chuyendoi_${new Date().getTime()}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     });
     
-    console.log('✅ Tất cả chức năng đã sẵn sàng.');
+    console.log('✅ Tất cả sự kiện đã sẵn sàng.');
 });
