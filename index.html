@@ -1,1 +1,867 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ Chuyển Đổi Địa Chỉ Hành Chính</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header-section h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .header-section .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+        
+        .card-custom:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header-custom {
+            background: white;
+            border-bottom: 3px solid var(--secondary-color);
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            padding: 20px;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .btn-custom-primary {
+            background: var(--secondary-color);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-custom-primary:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        .btn-custom-success {
+            background: var(--success-color);
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+            border-radius: 10px;
+        }
+        
+        .status-success {
+            background-color: #d4edda !important;
+            color: #155724;
+        }
+        
+        .status-warning {
+            background-color: #fff3cd !important;
+            color: #856404;
+        }
+        
+        .status-error {
+            background-color: #f8d7da !important;
+            color: #721c24;
+        }
+        
+        .data-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .example-address {
+            background: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 2rem;
+            }
+            
+            .header-section {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1><i class="bi bi-geo-alt-fill"></i> CÔNG CỤ CHUYỂN ĐỔI ĐỊA CHỈ</h1>
+            <p class="lead">Chuyển đổi hàng loạt từ cấu trúc cũ (Tỉnh → Huyện → Xã) sang cấu trúc mới (Tỉnh → Xã)</p>
+            <div class="mt-4">
+                <span class="badge bg-light text-dark me-2"><i class="bi bi-check-circle"></i> Miễn phí</span>
+                <span class="badge bg-light text-dark me-2"><i class="bi bi-lightning"></i> Xử lý nhanh</span>
+                <span class="badge bg-light text-dark"><i class="bi bi-download"></i> Xuất CSV/Excel</span>
+            </div>
+        </div>
 
+        <!-- Phần chính -->
+        <div class="container-fluid p-4">
+            <!-- Trạng thái dữ liệu -->
+            <div id="dataStatus" class="data-status">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-2 mb-0">Đang tải dữ liệu địa chỉ Việt Nam...</p>
+            </div>
+
+            <!-- Bước 1: Hướng dẫn -->
+            <div class="card card-custom">
+                <div class="card-header card-header-custom">
+                    <div class="d-flex align-items-center">
+                        <span class="step-badge">1</span>
+                        <span>HƯỚNG DẪN SỬ DỤNG</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Nhập danh sách địa chỉ cần chuyển đổi. <strong>Mỗi địa chỉ trên một dòng</strong>, theo một trong các định dạng sau:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="example-address">
+                                <strong>Định dạng 1:</strong><br>
+                                Tỉnh A, Huyện X, Xã 1
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="example-address">
+                                <strong>Định dạng 2:</strong><br>
+                                Tỉnh A - Huyện X - Xã 1
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="example-address">
+                                <strong>Định dạng 3:</strong><br>
+                                Tỉnh A Huyện X Xã 1
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p><strong>Ví dụ cụ thể:</strong></p>
+                        <pre class="bg-light p-3 rounded">Hà Nội, Quận Ba Đình, Phường Trúc Bạch
+TP. Hồ Chí Minh - Quận 1 - Phường Bến Nghé
+Đà Nẵng Huyện Hòa Vang Xã Hòa Phong
+Thái Nguyên, Thành phố Thái Nguyên, Phường Tân Lập</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bước 2: Nhập dữ liệu -->
+            <div class="card card-custom">
+                <div class="card-header card-header-custom">
+                    <div class="d-flex align-items-center">
+                        <span class="step-badge">2</span>
+                        <span>NHẬP DỮ LIỆU VÀ CHUYỂN ĐỔI</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="inputAddresses" class="form-label fw-bold">
+                            <i class="bi bi-card-text"></i> Danh sách địa chỉ cần chuyển đổi:
+                        </label>
+                        <textarea class="form-control" id="inputAddresses" rows="8" 
+                                  placeholder="Dán hoặc nhập danh sách địa chỉ của bạn vào đây...&#10;Mỗi địa chỉ trên một dòng."></textarea>
+                        <div class="form-text">Hỗ trợ cả tiếng Việt có dấu và không dấu. Tự động nhận diện định dạng.</div>
+                    </div>
+                    
+                    <div class="progress-container" style="display: none;" id="progressContainer">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span id="progressText">Đang xử lý...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress" style="height: 12px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-4">
+                        <div>
+                            <button id="btnConvert" class="btn btn-custom-primary me-2" disabled>
+                                <i class="bi bi-arrow-repeat"></i> BẮT ĐẦU CHUYỂN ĐỔI
+                            </button>
+                            <button id="btnReset" class="btn btn-outline-secondary">
+                                <i class="bi bi-trash"></i> XÓA TẤT CẢ
+                            </button>
+                        </div>
+                        <div class="text-end">
+                            <div class="stat-box">
+                                <div class="stat-number" id="lineCount">0</div>
+                                <div class="stat-label">DÒNG DỮ LIỆU</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bước 3: Kết quả -->
+            <div class="card card-custom">
+                <div class="card-header card-header-custom">
+                    <div class="d-flex align-items-center">
+                        <span class="step-badge">3</span>
+                        <span>KẾT QUẢ CHUYỂN ĐỔI</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="resultStats" class="alert alert-info" style="display: none;">
+                        <i class="bi bi-info-circle-fill"></i> <span id="resultText"></span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table id="resultTable" class="table table-hover w-100" style="display: none;">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>ĐỊA CHỈ CŨ (NHẬP VÀO)</th>
+                                    <th>TỈNH/THÀNH MỚI</th>
+                                    <th>QUẬN/HUYỆN CŨ</th>
+                                    <th>XÃ/PHƯỜNG MỚI</th>
+                                    <th width="120">TRẠNG THÁI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultBody">
+                                <!-- Dữ liệu sẽ được thêm vào đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="exportSection" style="display: none;" class="mt-4">
+                        <div class="d-flex flex-wrap gap-2">
+                            <button id="btnExportCSV" class="btn btn-custom-success">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> TẢI XUỐNG CSV
+                            </button>
+                            <button id="btnExportExcel" class="btn btn-success">
+                                <i class="bi bi-file-excel"></i> TẢI XUỐNG EXCEL
+                            </button>
+                            <button id="btnCopyTable" class="btn btn-outline-primary">
+                                <i class="bi bi-clipboard"></i> SAO CHÉP BẢNG
+                            </button>
+                            <button id="btnPrint" class="btn btn-outline-secondary">
+                                <i class="bi bi-printer"></i> IN KẾT QUẢ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin dự án -->
+            <div class="mt-5 pt-4 border-top text-center text-muted">
+                <p>
+                    <strong>Công cụ chuyển đổi địa chỉ hành chính Việt Nam</strong><br>
+                    Dữ liệu cập nhật 2025 | Chạy hoàn toàn trên trình duyệt | Không lưu trữ dữ liệu
+                </p>
+                <p class="small">
+                    Sử dụng dữ liệu từ <code>vn-address-data.json</code> | 
+                    <span id="dataInfo">Đang tải thông tin dữ liệu...</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Script chính -->
+    <script>
+        // ==================== KHAI BÁO BIẾN ====================
+        let addressData = null;
+        let dataLoaded = false;
+        let currentResults = [];
+
+        // ==================== TẢI DỮ LIỆU ====================
+        async function loadAddressData() {
+            try {
+                console.log("🔄 Đang tải dữ liệu từ vn-address-data.json...");
+                
+                const response = await fetch('./vn-address-data.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: Không thể tải file dữ liệu`);
+                }
+                
+                addressData = await response.json();
+                dataLoaded = true;
+                
+                // Cập nhật giao diện
+                $('#dataStatus').html(`
+                    <div class="alert alert-success d-flex align-items-center" role="alert">
+                        <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">Dữ liệu đã sẵn sàng!</h5>
+                            <p class="mb-0">Đã tải thành công ${addressData.data?.length || 0} tỉnh/thành phố</p>
+                        </div>
+                    </div>
+                `);
+                
+                $('#btnConvert').prop('disabled', false);
+                $('#dataInfo').text(`Dữ liệu: ${addressData.data?.length || 0} tỉnh/thành`);
+                
+                console.log(`✅ Đã tải ${addressData.data?.length || 0} tỉnh/thành`);
+                
+            } catch (error) {
+                console.error('❌ Lỗi tải dữ liệu:', error);
+                
+                $('#dataStatus').html(`
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">Lỗi tải dữ liệu!</h5>
+                            <p class="mb-0">${error.message}. Vui lòng kiểm tra file vn-address-data.json</p>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+
+        // ==================== HÀM TIỆN ÍCH ====================
+        function normalizeText(text) {
+            return text.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== TÁCH ĐỊA CHỈ ====================
+        function parseAddressLine(line) {
+            line = line.trim();
+            if (!line) return null;
+            
+            // Thử tách bằng dấu phẩy
+            let parts = line.split(/[,]/).map(p => p.trim()).filter(p => p);
+            if (parts.length >= 3) {
+                return {
+                    raw: line,
+                    province: parts[0],
+                    district: parts[1],
+                    ward: parts.slice(2).join(', ') // Xử lý trường hợp xã có nhiều phần
+                };
+            }
+            
+            // Thử tách bằng dấu gạch ngang
+            parts = line.split(/[-\u2013\u2014]/).map(p => p.trim()).filter(p => p);
+            if (parts.length >= 3) {
+                return {
+                    raw: line,
+                    province: parts[0],
+                    district: parts[1],
+                    ward: parts.slice(2).join(' - ')
+                };
+            }
+            
+            // Tách bằng từ khóa
+            const patterns = [
+                /(tỉnh|thành phố|tp\.?)\s*(.+?)\s*(huyện|quận|thị xã|tx\.?)\s*(.+?)\s*(xã|phường|thị trấn|tt\.?)\s*(.+)/i,
+                /(.+?)\s+(huyện|quận)\s+(.+?)\s+(xã|phường)\s+(.+)/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = line.match(pattern);
+                if (match) {
+                    return {
+                        raw: line,
+                        province: match[1] + ' ' + match[2],
+                        district: match[3] + ' ' + match[4],
+                        ward: match[5] + ' ' + match[6]
+                    };
+                }
+            }
+            
+            // Tách đơn giản bằng khoảng trắng (lấy 2-3-3 từ)
+            const words = line.split(/\s+/);
+            if (words.length >= 6) {
+                return {
+                    raw: line,
+                    province: words.slice(0, 2).join(' '),
+                    district: words.slice(2, 4).join(' '),
+                    ward: words.slice(4).join(' ')
+                };
+            } else if (words.length >= 3) {
+                // Giả định 1-1-1 từ
+                return {
+                    raw: line,
+                    province: words[0],
+                    district: words[1],
+                    ward: words.slice(2).join(' ')
+                };
+            }
+            
+            return {
+                raw: line,
+                province: line,
+                district: '',
+                ward: ''
+            };
+        }
+
+        // ==================== TÌM ĐỊA CHỈ ====================
+        function findAddressInData(provinceInput, districtInput, wardInput) {
+            if (!dataLoaded || !addressData?.data) {
+                return { status: 'Dữ liệu chưa sẵn sàng' };
+            }
+            
+            const normProvince = normalizeText(provinceInput);
+            const normDistrict = normalizeText(districtInput);
+            const normWard = normalizeText(wardInput);
+            
+            // Tìm tỉnh
+            for (const province of addressData.data) {
+                const normProvinceName = normalizeText(province.name);
+                
+                // So khớp tỉnh
+                if (normProvince.includes(normProvinceName) || 
+                    normProvinceName.includes(normProvince) ||
+                    normProvince.includes('thanh pho ' + normProvinceName) ||
+                    normProvince.includes('tinh ' + normProvinceName)) {
+                    
+                    // Tìm xã trong tỉnh (cấu trúc mới)
+                    if (province.wards && province.wards.length > 0) {
+                        for (const ward of province.wards) {
+                            const normWardName = normalizeText(ward.name);
+                            
+                            // So khớp xã
+                            if (normWard.includes(normWardName) || 
+                                normWardName.includes(normWard) ||
+                                (normDistrict && normWardName.includes(normalizeText(normDistrict + ' ' + normWard)))) {
+                                
+                                return {
+                                    status: 'Thành công',
+                                    province: province.name,
+                                    ward: ward.name,
+                                    code: ward.code
+                                };
+                            }
+                        }
+                        
+                        // Không tìm thấy xã phù hợp
+                        return {
+                            status: 'Tìm thấy tỉnh, không khớp xã',
+                            province: province.name,
+                            ward: '',
+                            code: ''
+                        };
+                    }
+                    
+                    // Tỉnh không có xã
+                    return {
+                        status: 'Tỉnh không có dữ liệu xã',
+                        province: province.name,
+                        ward: '',
+                        code: ''
+                    };
+                }
+            }
+            
+            return { status: 'Không tìm thấy tỉnh' };
+        }
+
+        // ==================== XỬ LÝ CHUYỂN ĐỔI ====================
+        function processAddresses() {
+            if (!dataLoaded) {
+                alert('Vui lòng đợi dữ liệu tải xong!');
+                return;
+            }
+            
+            const inputText = $('#inputAddresses').val().trim();
+            if (!inputText) {
+                alert('Vui lòng nhập danh sách địa chỉ!');
+                return;
+            }
+            
+            const lines = inputText.split('\n').filter(line => line.trim() !== '');
+            const total = lines.length;
+            
+            if (total === 0) {
+                alert('Không có địa chỉ nào để xử lý!');
+                return;
+            }
+            
+            // Hiển thị thanh tiến trình
+            $('#progressContainer').show();
+            $('#progressText').text(`Đang xử lý 0/${total} địa chỉ...`);
+            $('#progressBar').css('width', '0%');
+            $('#progressPercent').text('0%');
+            
+            currentResults = [];
+            let processed = 0;
+            
+            // Hàm xử lý từng địa chỉ
+            function processNext() {
+                if (processed >= total) {
+                    // Hoàn thành
+                    displayResults();
+                    $('#progressContainer').hide();
+                    return;
+                }
+                
+                const line = lines[processed];
+                const parsed = parseAddressLine(line);
+                
+                if (parsed) {
+                    const result = findAddressInData(parsed.province, parsed.district, parsed.ward);
+                    
+                    currentResults.push({
+                        index: processed + 1,
+                        original: parsed.raw,
+                        provinceOld: parsed.province,
+                        districtOld: parsed.district,
+                        wardOld: parsed.ward,
+                        provinceNew: result.province || '',
+                        wardNew: result.ward || '',
+                        status: result.status || 'Lỗi',
+                        code: result.code || ''
+                    });
+                } else {
+                    currentResults.push({
+                        index: processed + 1,
+                        original: line,
+                        provinceOld: '',
+                        districtOld: '',
+                        wardOld: '',
+                        provinceNew: '',
+                        wardNew: '',
+                        status: 'Không thể phân tích',
+                        code: ''
+                    });
+                }
+                
+                processed++;
+                
+                // Cập nhật tiến trình
+                const percent = Math.round((processed / total) * 100);
+                $('#progressBar').css('width', percent + '%');
+                $('#progressPercent').text(percent + '%');
+                $('#progressText').text(`Đang xử lý ${processed}/${total} địa chỉ...`);
+                
+                // Tiếp tục với địa chỉ tiếp theo
+                setTimeout(processNext, 10);
+            }
+            
+            // Bắt đầu xử lý
+            processNext();
+        }
+
+        // ==================== HIỂN THỊ KẾT QUẢ ====================
+        function displayResults() {
+            const tableBody = $('#resultBody');
+            tableBody.empty();
+            
+            let successCount = 0;
+            let warningCount = 0;
+            let errorCount = 0;
+            
+            // Thêm dữ liệu vào bảng
+            currentResults.forEach(result => {
+                // Đếm số lượng theo trạng thái
+                if (result.status === 'Thành công') successCount++;
+                else if (result.status.includes('Không tìm thấy') || result.status.includes('Lỗi') || result.status.includes('Không thể phân tích')) errorCount++;
+                else warningCount++;
+                
+                // Xác định class CSS cho dòng
+                let rowClass = '';
+                let statusClass = '';
+                let statusIcon = '';
+                
+                if (result.status === 'Thành công') {
+                    rowClass = 'status-success';
+                    statusClass = 'badge bg-success';
+                    statusIcon = '<i class="bi bi-check-circle"></i> ';
+                } else if (result.status.includes('Không tìm thấy') || result.status.includes('Lỗi') || result.status.includes('Không thể phân tích')) {
+                    rowClass = 'status-error';
+                    statusClass = 'badge bg-danger';
+                    statusIcon = '<i class="bi bi-x-circle"></i> ';
+                } else {
+                    rowClass = 'status-warning';
+                    statusClass = 'badge bg-warning text-dark';
+                    statusIcon = '<i class="bi bi-exclamation-triangle"></i> ';
+                }
+                
+                const row = `
+                    <tr class="${rowClass}">
+                        <td class="fw-bold">${result.index}</td>
+                        <td><small>${escapeHtml(result.original)}</small></td>
+                        <td>${escapeHtml(result.provinceNew)}</td>
+                        <td>${escapeHtml(result.districtOld)}</td>
+                        <td>${escapeHtml(result.wardNew)} ${result.code ? `<small class="text-muted">(${result.code})</small>` : ''}</td>
+                        <td><span class="${statusClass}">${statusIcon}${result.status}</span></td>
+                    </tr>
+                `;
+                
+                tableBody.append(row);
+            });
+            
+            // Hiển thị thống kê
+            const total = currentResults.length;
+            const successRate = total > 0 ? Math.round((successCount / total) * 100) : 0;
+            
+            $('#resultText').html(`
+                <strong>ĐÃ XỬ LÝ ${total} ĐỊA CHỈ:</strong> 
+                <span class="text-success">${successCount} thành công</span> | 
+                <span class="text-warning">${warningCount} cảnh báo</span> | 
+                <span class="text-danger">${errorCount} lỗi</span>
+                <span class="float-end">Tỷ lệ thành công: <strong>${successRate}%</strong></span>
+            `);
+            
+            $('#resultStats').show();
+            
+            // Khởi tạo DataTable
+            if ($.fn.DataTable.isDataTable('#resultTable')) {
+                $('#resultTable').DataTable().destroy();
+            }
+            
+            $('#resultTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                order: [[0, 'asc']],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json'
+                },
+                dom: '<"top"fl>rt<"bottom"ip><"clear">'
+            }).show();
+            
+            // Hiển thị nút xuất
+            $('#exportSection').show();
+            
+            // Cuộn đến kết quả
+            $('html, body').animate({
+                scrollTop: $('#exportSection').offset().top - 100
+            }, 500);
+        }
+
+        // ==================== XUẤT DỮ LIỆU ====================
+        function exportToCSV() {
+            const headers = ['STT', 'Địa chỉ cũ', 'Tỉnh/Thành mới', 'Quận/Huyện cũ', 'Xã/Phường mới', 'Mã', 'Trạng thái'];
+            
+            const rows = currentResults.map(result => [
+                result.index,
+                result.original,
+                result.provinceNew,
+                result.districtOld,
+                result.wardNew,
+                result.code || '',
+                result.status
+            ]);
+            
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = `ket_qua_chuyen_doi_${new Date().getTime()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToExcel() {
+            const wsData = [
+                ['KẾT QUẢ CHUYỂN ĐỔI ĐỊA CHỈ'],
+                ['Thời gian:', new Date().toLocaleString('vi-VN')],
+                [''],
+                ['STT', 'Địa chỉ cũ', 'Tỉnh/Thành mới', 'Quận/Huyện cũ', 'Xã/Phường mới', 'Mã', 'Trạng thái']
+            ];
+            
+            currentResults.forEach(result => {
+                wsData.push([
+                    result.index,
+                    result.original,
+                    result.provinceNew,
+                    result.districtOld,
+                    result.wardNew,
+                    result.code || '',
+                    result.status
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
+            
+            // Merge các ô tiêu đề
+            if (!ws['!merges']) ws['!merges'] = [];
+            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } });
+            ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 1 } });
+            
+            XLSX.writeFile(wb, `ket_qua_chuyen_doi_${new Date().getTime()}.xlsx`);
+        }
+
+        function copyTableToClipboard() {
+            const table = $('#resultTable').clone();
+            table.find('.dataTables_empty').remove();
+            
+            const html = table.prop('outerHTML');
+            navigator.clipboard.writeText(html).then(() => {
+                alert('Đã sao chép bảng kết quả vào clipboard!');
+            }).catch(err => {
+                console.error('Lỗi sao chép:', err);
+                alert('Không thể sao chép vào clipboard.');
+            });
+        }
+
+        // ==================== SỰ KIỆN ====================
+        $(document).ready(function() {
+            // Tải dữ liệu khi trang được mở
+            loadAddressData();
+            
+            // Đếm số dòng nhập vào
+            $('#inputAddresses').on('input', function() {
+                const lines = $(this).val().trim().split('\n').filter(line => line.trim() !== '');
+                $('#lineCount').text(lines.length);
+            });
+            
+            // Nút chuyển đổi
+            $('#btnConvert').click(processAddresses);
+            
+            // Nút reset
+            $('#btnReset').click(function() {
+                if (confirm('Bạn có chắc muốn xóa toàn bộ dữ liệu đã nhập?')) {
+                    $('#inputAddresses').val('');
+                    $('#lineCount').text('0');
+                    $('#resultStats').hide();
+                    $('#resultTable').hide();
+                    $('#exportSection').hide();
+                    $('#progressContainer').hide();
+                }
+            });
+            
+            // Nút xuất CSV
+            $('#btnExportCSV').click(exportToCSV);
+            
+            // Nút xuất Excel
+            $('#btnExportExcel').click(exportToExcel);
+            
+            // Nút sao chép bảng
+            $('#btnCopyTable').click(copyTableToClipboard);
+            
+            // Nút in
+            $('#btnPrint').click(function() {
+                window.print();
+            });
+            
+            // Phím tắt
+            $(document).keydown(function(e) {
+                // Ctrl+Enter để chuyển đổi
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    $('#btnConvert').click();
+                }
+                
+                // Esc để reset
+                if (e.key === 'Escape') {
+                    $('#btnReset').click();
+                }
+            });
+            
+            // Tooltip
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+</body>
+</html>
