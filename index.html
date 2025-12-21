@@ -5,43 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Chuyển Đổi Địa Chỉ Cũ → Mới</title>
 
-  <!-- Vietnam Address Converter (browser build) -->
   <script src="https://unpkg.com/vietnam-address-converter@latest/dist/index.browser.js"></script>
 
   <style>
     :root{
-      --bg1:#5b5fd6;
-      --bg2:#7d4bb7;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#475569;
-      --line:#e2e8f0;
-      --primary:#6c63ff;
-      --primary2:#7c3aed;
-      --okBg:#eafff0;
-      --okBorder:#a7f3d0;
-      --okText:#166534;
-      --warnBg:#fff7ed;
-      --warnBorder:#fed7aa;
-      --warnText:#9a3412;
-      --errBg:#fff1f2;
-      --errBorder:#fecdd3;
-      --errText:#9f1239;
+      --bg1:#5b5fd6; --bg2:#7d4bb7;
+      --card:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0;
+      --primary:#6c63ff; --primary2:#7c3aed;
+      --okBg:#eafff0; --okBorder:#a7f3d0; --okText:#166534;
+      --warnBg:#fff7ed; --warnBorder:#fed7aa; --warnText:#9a3412;
+      --errBg:#fff1f2; --errBorder:#fecdd3; --errText:#9f1239;
       --shadow: 0 18px 60px rgba(15,23,42,.25);
-      --r:26px;
-      --r2:16px;
+      --r:26px; --r2:16px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:var(--sans);
-      color:var(--text);
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      margin:0; font-family:var(--sans); color:var(--text);
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
       padding:22px;
       background:
         radial-gradient(900px 520px at 15% 15%, rgba(255,255,255,.22), transparent 55%),
@@ -49,67 +31,26 @@
         linear-gradient(135deg, var(--bg1), var(--bg2));
     }
     .wrap{width:min(980px,100%);}
-    .card{
-      background:var(--card);
-      border-radius:var(--r);
-      box-shadow: var(--shadow);
-      padding:24px;
-    }
+    .card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:24px;}
     .title{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:12px;
-      font-size:30px;
-      font-weight:850;
-      margin:6px 0 18px;
-      letter-spacing:.2px;
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      font-size:30px; font-weight:850; margin:6px 0 18px;
     }
     .icon{
-      width:42px;height:42px;border-radius:14px;
-      display:grid;place-items:center;
+      width:42px; height:42px; border-radius:14px; display:grid; place-items:center;
       background: linear-gradient(135deg, var(--primary), var(--primary2));
-      color:#fff;
-      box-shadow: 0 14px 30px rgba(124,58,237,.25);
-      user-select:none;
+      color:#fff; box-shadow:0 14px 30px rgba(124,58,237,.25); user-select:none;
     }
-
-    .tabs{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      flex-wrap:wrap;
-      margin: 6px 0 16px;
-    }
+    .tabs{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:6px 0 16px;}
     .tab{
-      border:1px solid var(--line);
-      background:#f8fafc;
-      padding:10px 14px;
-      border-radius:999px;
-      font-weight:700;
-      cursor:pointer;
-      color:#0f172a;
+      border:1px solid var(--line); background:#f8fafc;
+      padding:10px 14px; border-radius:999px; font-weight:700; cursor:pointer;
     }
-    .tab.active{
-      background: rgba(108,99,255,.12);
-      border-color: rgba(108,99,255,.30);
-    }
-
-    label{
-      display:block;
-      font-weight:700;
-      color:#0f172a;
-      margin:10px 0 8px;
-    }
-
+    .tab.active{background: rgba(108,99,255,.12); border-color: rgba(108,99,255,.30);}
+    label{display:block; font-weight:700; margin:10px 0 8px;}
     .input, textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px 14px;
-      font-size:16px;
-      outline:none;
-      background:#fff;
+      width:100%; border:1px solid var(--line); border-radius:14px;
+      padding:14px; font-size:16px; outline:none; background:#fff;
       box-shadow: 0 6px 18px rgba(15,23,42,.06);
     }
     textarea{min-height:160px; resize:vertical; line-height:1.4;}
@@ -117,146 +58,61 @@
       border-color: rgba(108,99,255,.50);
       box-shadow: 0 0 0 4px rgba(108,99,255,.14), 0 6px 18px rgba(15,23,42,.06);
     }
-
     .btn{
-      width:100%;
-      margin-top:16px;
-      border:none;
-      border-radius:14px;
-      padding:15px 16px;
-      font-size:16px;
-      font-weight:850;
-      color:#fff;
-      cursor:pointer;
+      width:100%; margin-top:16px; border:none; border-radius:14px;
+      padding:15px 16px; font-size:16px; font-weight:850; color:#fff; cursor:pointer;
       background: linear-gradient(90deg, var(--primary), var(--primary2));
       box-shadow: 0 14px 30px rgba(108,99,255,.25);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
+      display:flex; align-items:center; justify-content:center; gap:10px;
     }
     .btn:disabled{opacity:.55; cursor:not-allowed}
-
-    .row{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin-top:12px;
-    }
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
     .miniBtn{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:12px;
-      padding:10px 12px;
-      cursor:pointer;
-      font-weight:800;
-      color:#0f172a;
+      border:1px solid var(--line); background:#fff; border-radius:12px;
+      padding:10px 12px; cursor:pointer; font-weight:800;
     }
-
-    .hint{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-    }
-
-    .box{
-      margin-top:18px;
-      border-radius:var(--r2);
-      border:1px solid var(--line);
-      overflow:hidden;
-    }
-    .boxHead{
-      padding:14px 16px;
-      font-weight:900;
-      background:#f8fafc;
-      border-bottom:1px solid var(--line);
-    }
-    .status{
-      padding:14px 16px;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-    }
+    .box{margin-top:18px; border-radius:var(--r2); border:1px solid var(--line); overflow:hidden;}
+    .boxHead{padding:14px 16px; font-weight:900; background:#f8fafc; border-bottom:1px solid var(--line);}
+    .status{padding:14px 16px; display:flex; gap:10px; align-items:flex-start;}
     .badge{
-      width:22px;height:22px;border-radius:999px;
-      display:grid;place-items:center;
-      font-weight:900;
-      flex:0 0 auto;
+      width:22px; height:22px; border-radius:999px;
+      display:grid; place-items:center; font-weight:900; flex:0 0 auto;
     }
     .ok{background:var(--okBg); border:1px solid var(--okBorder); color:var(--okText);}
     .warn{background:var(--warnBg); border:1px solid var(--warnBorder); color:var(--warnText);}
     .err{background:var(--errBg); border:1px solid var(--errBorder); color:var(--errText);}
     .msg{font-weight:800;}
     .submsg{margin-top:4px; color:rgba(15,23,42,.70); font-weight:650;}
-
-    .resultGrid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-      padding:16px;
-      background:#fff;
-    }
+    .resultGrid{display:grid; grid-template-columns:1fr; gap:12px; padding:16px;}
     .panel{
-      border-radius:14px;
-      border:1px solid var(--line);
-      padding:12px 14px;
-      background:#f8fafc;
+      border-radius:14px; border:1px solid var(--line);
+      padding:12px 14px; background:#f8fafc;
     }
-    .panel.green{
-      background: #ecfdf3;
-      border-color: #86efac;
-    }
+    .panel.green{background:#ecfdf3; border-color:#86efac;}
     .panelTitle{font-weight:900; margin-bottom:8px;}
-    ul{margin:8px 0 0 18px; color:#0f172a;}
+    ul{margin:8px 0 0 18px;}
     li{margin:6px 0; font-weight:700;}
     .lineAddr{
       font-family:var(--mono);
-      background:#fff;
-      border:1px dashed rgba(15,23,42,.20);
-      border-radius:12px;
-      padding:10px 12px;
-      margin-top:8px;
-      word-break:break-word;
+      background:#fff; border:1px dashed rgba(15,23,42,.20);
+      border-radius:12px; padding:10px 12px; margin-top:8px; word-break:break-word;
     }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:10px;
-      font-size:14px;
-    }
-    th,td{
-      border-top:1px solid var(--line);
-      padding:10px 10px;
-      vertical-align:top;
-    }
+    table{width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;}
+    th,td{border-top:1px solid var(--line); padding:10px; vertical-align:top;}
     th{background:#f8fafc; text-align:left; font-weight:900;}
     .pill{
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
-      font-weight:900;
-      font-size:12px;
+      display:inline-block; padding:4px 10px; border-radius:999px;
+      font-weight:900; font-size:12px;
     }
     .pillOk{background:#dcfce7; color:#166534; border:1px solid #86efac;}
     .pillFail{background:#ffe4e6; color:#9f1239; border:1px solid #fecdd3;}
-
-    .footerNote{
-      margin-top:14px;
-      color:rgba(15,23,42,.60);
-      font-size:12px;
-      text-align:center;
-      font-weight:650;
-    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="title">
-        <div class="icon">⇄</div>
-        <div>Chuyển Đổi Địa Chỉ Cũ → Mới</div>
-      </div>
+      <div class="title"><div class="icon">⇄</div><div>Chuyển Đổi Địa Chỉ Cũ → Mới</div></div>
 
       <div class="tabs">
         <div class="tab active" data-tab="single">Đổi 1 địa chỉ</div>
@@ -266,32 +122,21 @@
       <!-- SINGLE -->
       <div id="pane-single">
         <label>Nhập địa chỉ cần chuyển đổi:</label>
-        <input id="singleInput" class="input" placeholder="Ví dụ: xa thanh binh, huyen cho gao, tinh tien giang" />
+        <input id="singleInput" class="input" placeholder="Ví dụ: số 34 ấp Bình Long, xã thanh bình, huyện chợ gạo, tỉnh tiền giang" />
 
-        <button id="btnSingle" class="btn">
-          ⇄ Chuyển đổi địa chỉ
-        </button>
+        <button id="btnSingle" class="btn">⇄ Chuyển đổi địa chỉ</button>
 
         <div class="row">
-          <button class="miniBtn" id="btnSingleExample">Ví dụ</button>
           <button class="miniBtn" id="btnCopyNewSingle">Copy địa chỉ mới (1 dòng)</button>
           <button class="miniBtn" id="btnCopyOldSingle">Copy địa chỉ cũ (1 dòng)</button>
-          <button class="miniBtn" id="btnCopyJsonSingle">Copy JSON</button>
         </div>
 
-        <div class="hint">
-          Tool tự thử nhiều kiểu nhận dạng: có dấu/không dấu, dấu phẩy, dấu “- / ; |”, viết tắt (tp, q, h, p, xa...), khoảng trắng linh tinh...
-        </div>
-
-        <div class="box" style="margin-top:16px;">
-          <div class="boxHead">2) Kết quả</div>
+        <div class="box">
+          <div class="boxHead">Kết quả</div>
 
           <div id="singleStatus" class="status warn">
             <div class="badge warn">i</div>
-            <div>
-              <div class="msg">Đang tải dữ liệu…</div>
-              <div class="submsg">Chờ tool khởi tạo xong sẽ tự dùng được.</div>
-            </div>
+            <div><div class="msg">Đang tải dữ liệu…</div><div class="submsg">Vui lòng đợi…</div></div>
           </div>
 
           <div id="singleResult" class="resultGrid" style="display:none;">
@@ -308,9 +153,8 @@
             </div>
 
             <div class="panel" style="background:#ecfeff;">
-              <div class="panelTitle">Thông tin chuyển đổi</div>
-              <div><b>Loại chuyển đổi:</b> <span id="mapType"></span></div>
-              <div style="margin-top:6px;"><b>Ghi chú:</b> <span id="note"></span></div>
+              <div class="panelTitle">Thông tin</div>
+              <div><b>Loại chuyển đổi:</b> <span id="mapType">—</span></div>
             </div>
           </div>
         </div>
@@ -319,34 +163,20 @@
       <!-- BATCH -->
       <div id="pane-batch" style="display:none;">
         <label>Nhập danh sách địa chỉ (mỗi dòng 1 địa chỉ):</label>
-        <textarea id="batchInput" placeholder="Ví dụ:
-xa thanh binh - huyen cho gao - tinh tien giang
-phuong 12, quan go vap, tp hcm
-p.15; q.10; tp.hcm"></textarea>
+        <textarea id="batchInput" placeholder="Mỗi dòng 1 địa chỉ..."></textarea>
 
-        <button id="btnBatch" class="btn">
-          ⇄ Chuyển đổi hàng loạt
-        </button>
+        <button id="btnBatch" class="btn">⇄ Chuyển đổi hàng loạt</button>
 
         <div class="row">
-          <button class="miniBtn" id="btnBatchExample">Ví dụ</button>
-          <button class="miniBtn" id="btnCopyCsv">Copy CSV (old,new,success,message)</button>
-          <button class="miniBtn" id="btnCopyJsonBatch">Copy JSON</button>
           <button class="miniBtn" id="btnCopyNewOnly">Copy danh sách địa chỉ mới (mỗi dòng 1)</button>
-        </div>
-
-        <div class="hint">
-          Batch sẽ trả bảng: địa chỉ cũ (1 dòng) → địa chỉ mới (1 dòng). Dòng nào fail sẽ có message.
+          <button class="miniBtn" id="btnCopyCsv">Copy CSV (old,new,success,message)</button>
         </div>
 
         <div class="box">
           <div class="boxHead">Kết quả hàng loạt</div>
           <div id="batchStatus" class="status warn">
             <div class="badge warn">i</div>
-            <div>
-              <div class="msg">Sẵn sàng</div>
-              <div class="submsg">Dán danh sách rồi bấm chuyển đổi.</div>
-            </div>
+            <div><div class="msg">Sẵn sàng</div><div class="submsg">Dán danh sách rồi bấm chuyển đổi.</div></div>
           </div>
 
           <div id="batchWrap" style="display:none; padding:16px;">
@@ -371,15 +201,11 @@ p.15; q.10; tp.hcm"></textarea>
         </div>
       </div>
 
-      <div class="footerNote">
-        chạy offline (client-side) • không cần API key • nguồn dữ liệu: vietnam-address-database
-      </div>
     </div>
   </div>
 
 <script>
 (() => {
-  // ----------------- UI helpers -----------------
   const $ = (id) => document.getElementById(id);
 
   function setStatus(el, type, title, desc){
@@ -391,144 +217,147 @@ p.15; q.10; tp.hcm"></textarea>
     el.querySelector(".submsg").textContent = desc || "";
   }
 
-  function normalizeSpaces(s){
-    return (s || "")
-      .replace(/\u00A0/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+  function escapeHtml(s){
+    return (s ?? "").toString().replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
   }
 
-  // Bỏ dấu tiếng Việt
-  function removeAccents(str){
+  function chuanHoaText(s){ return (s ?? "").toString().replace(/\s+/g, " ").trim(); }
+
+  function boDauTiengViet(str){
     return (str || "")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/đ/g, "d").replace(/Đ/g, "D");
   }
 
-  // Chuẩn hoá phân tách: , - ; | / → dấu phẩy
-  function normalizeSeparators(s){
-    return (s || "")
+  // Nhận dạng mạnh các dấu phân cách
+  function chuanHoaDauCach(s){
+    return chuanHoaText((s || "")
       .replace(/[|;/]+/g, ",")
       .replace(/[-–—]+/g, ",")
       .replace(/[\\\/]+/g, ",")
-      .replace(/\s*,\s*/g, ", ")
-      .replace(/\s+/g, " ")
-      .trim();
+      .replace(/\s*,\s*/g, ", "));
   }
 
-  // Chuẩn hoá viết tắt (không dấu/có dấu đều cố gắng nhận)
-  function expandAbbr(s){
+  // Mở rộng viết tắt phổ biến (để dễ match)
+  function moRongVietTat(s){
     let x = " " + (s || "") + " ";
     const reps = [
-      [/\btp\.?\b/gi, "thanh pho"],
-      [/\btp\b/gi, "thanh pho"],
-      [/\bt\.p\.?\b/gi, "thanh pho"],
-      [/\btinh\b/gi, "tinh"],
-      [/\bquan\.?\b/gi, "quan"],
-      [/\bq\.?\b/gi, "quan"],
-      [/\bhuyen\.?\b/gi, "huyen"],
-      [/\bh\.?\b/gi, "huyen"],
-      [/\bphuong\.?\b/gi, "phuong"],
-      [/\bp\.?\b/gi, "phuong"],
-      [/\bxa\.?\b/gi, "xa"],
-      [/\btx\.?\b/gi, "thi xa"],
-      [/\btt\.?\b/gi, "thi tran"],
+      [/\btp\.?\b/gi, "thành phố"],
+      [/\bt\.p\.?\b/gi, "thành phố"],
+      [/\bq\.?\b/gi, "quận"],
+      [/\bh\.?\b/gi, "huyện"],
+      [/\bp\.?\b/gi, "phường"],
+      [/\btx\.?\b/gi, "thị xã"],
+      [/\btt\.?\b/gi, "thị trấn"],
     ];
     reps.forEach(([re, to]) => x = x.replace(re, " " + to + " "));
-    return normalizeSpaces(x);
+    return chuanHoaText(x);
   }
 
-  // Title Case nhẹ (để nhìn đẹp hơn)
-  function smartCapitalize(s){
-    return (s || "")
-      .split(" ")
-      .map(w => w ? (w[0].toUpperCase() + w.slice(1)) : w)
-      .join(" ");
+  // Tách "đường/số nhà/ấp/thôn..." ra trước, giữ nguyên để gắn lại
+  function coTuHanhChinh(token){
+    const t = boDauTiengViet(token).toLowerCase();
+    return (
+      t.includes("xa") || t.includes("phuong") || t.includes("thi tran") || t.includes("thi xa") ||
+      t.includes("huyen") || t.includes("quan") || t.includes("tinh") || t.includes("thanh pho")
+    );
   }
 
-  // ----------------- Address formatting (không còn [object Object]) -----------------
-  function bestStringFromObject(obj){
-    const keys = ["fullAddress","full_address","full_name","fullName","address","name","text","value"];
-    for(const k of keys){
-      if(obj && obj[k] != null && String(obj[k]).trim() !== "") return String(obj[k]).trim();
+  function tachStreetVaHanhChinh(input){
+    const raw = chuanHoaText(input);
+    if(!raw) return { street:"", admin:"" };
+
+    // Tách bằng dấu phẩy sau khi chuẩn hoá
+    const parts = chuanHoaDauCach(raw).split(",").map(p => chuanHoaText(p)).filter(Boolean);
+
+    if(parts.length <= 1){
+      // nếu không có dấu phẩy, thử tìm vị trí token hành chính
+      const tokens = raw.split(/\s+/);
+      let idx = -1;
+      for(let i=0;i<tokens.length;i++){
+        const window3 = tokens.slice(i, i+3).join(" ");
+        if(coTuHanhChinh(tokens[i]) || coTuHanhChinh(window3)){ idx = i; break; }
+      }
+      if(idx > 0){
+        return {
+          street: chuanHoaText(tokens.slice(0, idx).join(" ")).replace(/[,]+$/,"").trim(),
+          admin:  chuanHoaText(tokens.slice(idx).join(" "))
+        };
+      }
+      return { street:"", admin: raw };
     }
-    return "";
-  }
 
-  function pickAreaName(area){
-    if(!area || typeof area !== "object") return "";
-    const t = (area.type || "").toString().trim();
-    const n = (area.name || area.full_name || "").toString().trim();
-    if(t && n) return (t + " " + n).trim();
-    return (n || t || "").trim();
-  }
-
-  function formatAddress(val){
-    if(val == null) return "";
-    if(typeof val === "string") return normalizeSpaces(val);
-
-    if(typeof val === "object"){
-      const direct = bestStringFromObject(val);
-      if(direct) return normalizeSpaces(direct);
-
-      const parts = [];
-      const street = (val.street || val.streetAddress || "").toString().trim();
-      if(street) parts.push(street);
-
-      const ward = val.ward || val.newWard || val.wardInfo || val.new_ward;
-      const district = val.district || val.districtInfo || val.oldDistrict || val.old_district;
-      const province = val.province || val.provinceInfo || val.newProvince || val.new_province;
-
-      const w = pickAreaName(ward);
-      const d = pickAreaName(district);
-      const p = pickAreaName(province);
-
-      if(w) parts.push(w);
-      if(d) parts.push(d);
-      if(p) parts.push(p);
-
-      if(parts.length) return normalizeSpaces(parts.join(", "));
-
-      try { return JSON.stringify(val); } catch { return String(val); }
+    // Nếu phần đầu không chứa từ hành chính => coi là street
+    const first = parts[0];
+    if(!coTuHanhChinh(first)){
+      return { street:first, admin: parts.slice(1).join(", ") };
     }
-    return normalizeSpaces(String(val));
+
+    return { street:"", admin: parts.join(", ") };
   }
 
-  function breakdownFromObject(obj){
-    // trả về mảng dòng bullet: ["Phường/Xã: ...", ...]
-    const out = [];
-    if(!obj || typeof obj !== "object") return out;
-
-    const street = (obj.street || obj.streetAddress || "").toString().trim();
-    const ward = obj.ward || obj.newWard || obj.wardInfo || obj.new_ward;
-    const district = obj.district || obj.districtInfo || obj.oldDistrict || obj.old_district;
-    const province = obj.province || obj.provinceInfo || obj.newProvince || obj.new_province;
-
-    if(ward) out.push("Phường/Xã: " + pickAreaName(ward));
-    if(district) out.push("Quận/Huyện: " + pickAreaName(district));
-    if(province) out.push("Tỉnh/TP: " + pickAreaName(province));
-    out.push("Đường/Số nhà: " + (street ? street : "Không có"));
-
-    return out;
+  function vietHoaDauTu(s){
+    s = chuanHoaText(s);
+    if(!s) return "";
+    return s.split(" ").map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ");
   }
 
-  // ----------------- Converter -----------------
+  function formatAddressObject(obj){
+    if(!obj || typeof obj !== "object") return "";
+    const ward = chuanHoaText(obj.ward);
+    const district = chuanHoaText(obj.district);
+    const province = chuanHoaText(obj.province);
+    const street = chuanHoaText(obj.street || obj.streetAddress);
+
+    const parts = [];
+    if(street) parts.push(vietHoaDauTu(street));
+    if(ward) parts.push(vietHoaDauTu(ward));
+    if(district) parts.push(vietHoaDauTu(district));
+    if(province) parts.push(vietHoaDauTu(province));
+    return parts.join(", ");
+  }
+
+  function breakdown(obj){
+    if(!obj || typeof obj !== "object") return {
+      ward:"Không có", district:"Không có", province:"Không có", street:"Không có"
+    };
+    return {
+      ward: obj.ward ? vietHoaDauTu(obj.ward) : "Không có",
+      district: obj.district ? vietHoaDauTu(obj.district) : "Không có",
+      province: obj.province ? vietHoaDauTu(obj.province) : "Không có",
+      street: (obj.street || obj.streetAddress) ? vietHoaDauTu(obj.street || obj.streetAddress) : "Không có"
+    };
+  }
+
+  // thử nhiều biến thể (không dấu / có dấu / dấu phân cách / viết tắt)
+  function buildCandidates(input){
+    const raw = chuanHoaText(input);
+    const sep = chuanHoaDauCach(raw);
+    const exp = chuanHoaDauCach(moRongVietTat(sep));
+
+    const noAcc = boDauTiengViet(exp);
+    const list = [raw, sep, exp, noAcc].map(x => chuanHoaText(x)).filter(Boolean);
+    return [...new Set(list)];
+  }
+
   let converter = null;
   let ready = false;
+  let lastSingle = null;
+  let lastBatch = null;
 
   async function init(){
     if(!window.VietnamAddressConverter?.VietnamAddressConverter){
-      setStatus($("singleStatus"), "err", "Không load được thư viện", "Kiểm tra mạng/CDN unpkg.");
+      setStatus($("singleStatus"), "err", "Không tải được thư viện", "Kiểm tra mạng.");
       return;
     }
-
-    setStatus($("singleStatus"), "warn", "Đang tải dữ liệu…", "Đợi 3–10s tuỳ mạng.");
+    setStatus($("singleStatus"), "warn", "Đang tải dữ liệu…", "Vui lòng đợi…");
     try{
       converter = new window.VietnamAddressConverter.VietnamAddressConverter();
       await converter.initializeFromUrl("https://unpkg.com/vietnam-address-database@latest/address.json");
       ready = true;
-
       setStatus($("singleStatus"), "ok", "Sẵn sàng!", "Nhập địa chỉ rồi bấm chuyển đổi.");
       setStatus($("batchStatus"), "ok", "Sẵn sàng!", "Dán danh sách rồi bấm chuyển đổi.");
     }catch(e){
@@ -537,152 +366,142 @@ p.15; q.10; tp.hcm"></textarea>
     }
   }
 
-  // Thử nhiều biến thể để “bắt” tốt nhất
-  function buildCandidates(input){
-    const raw = normalizeSpaces(input);
-    const sep = normalizeSeparators(raw);
-
-    const lower = sep.toLowerCase();
-    const exp = expandAbbr(lower);            // vẫn không dấu/có dấu nhưng chuẩn chữ
-    const expSep = normalizeSeparators(exp);
-
-    const noAcc = removeAccents(expSep);      // bản không dấu
-    const capNoAcc = smartCapitalize(noAcc);  // để đẹp (không làm tăng đúng/sai nhiều)
-
-    // Có nhiều trường hợp người dùng viết: "xa A huyen B tinh C" không có dấu phẩy
-    const addComma = expSep
-      .replace(/\b(xa|phuong|thi tran|thi xa)\b/gi, (m)=>m)
-      .replace(/\b(huyen|quan)\b/gi, (m)=>", " + m)
-      .replace(/\b(tinh|thanh pho)\b/gi, (m)=>", " + m);
-    const addComma2 = normalizeSeparators(addComma);
-
-    // Danh sách unique, giữ thứ tự
-    const list = [raw, sep, expSep, addComma2, noAcc, capNoAcc]
-      .map(x => normalizeSpaces(x))
-      .filter(Boolean);
-
-    return [...new Set(list)];
-  }
-
-  function tryConvertBest(input){
-    const cands = buildCandidates(input);
-
+  function tryConvertBest(adminInput){
+    const cands = buildCandidates(adminInput);
     let bestFail = null;
     for(const s of cands){
       try{
         const r = converter.convertAddress(s);
         if(r && r.success) return { ok:true, used:s, res:r, tried:cands };
         bestFail = bestFail || r;
-      }catch(e){
-        // ignore, try next
-      }
+      }catch(e){}
     }
-    return { ok:false, used:cands[0] || "", res: bestFail || { success:false, message:"Không chuyển đổi được" }, tried:cands };
+    return { ok:false, used:cands[0] || "", res: bestFail || {success:false, message:"Không chuyển đổi được"}, tried:cands };
   }
 
-  // ----------------- SINGLE actions -----------------
-  let lastSingle = null;
+  function renderSingle(payload, streetFromInput){
+    lastSingle = { payload, streetFromInput };
 
-  function renderSingle(payload){
-    const { ok, used, res, tried } = payload;
-    lastSingle = payload;
-
-    if(!ok){
+    if(!payload.ok){
       $("singleResult").style.display = "none";
-      setStatus($("singleStatus"), "err", "Không chuyển đổi được", (res?.message || "Không tìm thấy mapping phù hợp."));
+      setStatus($("singleStatus"), "err", "Không chuyển đổi được", payload.res?.message || "Không tìm thấy mapping phù hợp.");
       return;
     }
 
-    // show result box
-    $("singleResult").style.display = "grid";
-    setStatus($("singleStatus"), "ok", "Chuyển đổi thành công!", `Đã nhận dạng theo: "${used}"`);
+    // lấy object ward/district/province từ thư viện
+    const oldObj = payload.res.originalAddress || {};
+    const newObj = payload.res.convertedAddress || {};
 
-    const oldObj = res.originalAddress;
-    const newObj = res.convertedAddress;
+    // gắn street giữ nguyên (ưu tiên street user nhập)
+    const oldOut = {
+      ward: oldObj.ward, district: oldObj.district, province: oldObj.province,
+      street: (streetFromInput || oldObj.street || oldObj.streetAddress || "")
+    };
+    const newOut = {
+      ward: newObj.ward, district: newObj.district, province: newObj.province,
+      street: (streetFromInput || newObj.street || newObj.streetAddress || "")
+    };
 
-    // Bullets
-    const oldLines = breakdownFromObject(oldObj);
-    const newLines = breakdownFromObject(newObj);
+    const oldB = breakdown(oldOut);
+    const newB = breakdown(newOut);
 
-    $("oldList").innerHTML = oldLines.map(x => `<li>${x}</li>`).join("");
-    $("newList").innerHTML = newLines.map(x => `<li>${x}</li>`).join("");
+    $("oldList").innerHTML = `
+      <li>Phường/Xã: ${oldB.ward}</li>
+      <li>Quận/Huyện: ${oldB.district}</li>
+      <li>Tỉnh/TP: ${oldB.province}</li>
+      <li>Đường/Số nhà: ${oldB.street}</li>
+    `;
+    $("newList").innerHTML = `
+      <li>Phường/Xã: ${newB.ward}</li>
+      <li>Quận/Huyện: ${newB.district}</li>
+      <li>Tỉnh/TP: ${newB.province}</li>
+      <li>Đường/Số nhà: ${newB.street}</li>
+    `;
 
-    // One-line addresses (đúng ý bạn)
-    const oldLine = formatAddress(oldObj);
-    const newLine = formatAddress(newObj);
+    // ✅ ra nguyên dòng địa chỉ mới/cũ
+    const oldLine = formatAddressObject(oldOut);
+    const newLine = formatAddressObject(newOut);
 
     $("oldLine").textContent = oldLine || "(trống)";
     $("newLine").textContent = newLine || "(trống)";
 
-    const mappingType = res.mappingInfo?.mappingType || res.mappingType || "";
-    $("mapType").textContent = mappingType || "—";
-    $("note").textContent = res.message || "Chuyển đổi thành công";
+    $("mapType").textContent = payload.res.mappingInfo?.mappingType || payload.res.mappingType || "—";
+
+    $("singleResult").style.display = "grid";
+    setStatus($("singleStatus"), "ok", "Chuyển đổi thành công!", `Đã nhận dạng theo: "${payload.used}"`);
   }
 
   $("btnSingle").addEventListener("click", () => {
-    const input = $("singleInput").value || "";
-    if(!ready) return setStatus($("singleStatus"), "warn", "Chưa sẵn sàng", "Đang tải dữ liệu...");
-    if(!normalizeSpaces(input)) return setStatus($("singleStatus"), "warn", "Bạn chưa nhập địa chỉ", "Hãy nhập rồi thử lại.");
+    if(!ready) return setStatus($("singleStatus"), "warn", "Chưa sẵn sàng", "Đang tải dữ liệu…");
+    const input = chuanHoaText($("singleInput").value);
+    if(!input) return setStatus($("singleStatus"), "warn", "Bạn chưa nhập địa chỉ", "");
 
-    renderSingle(tryConvertBest(input));
-  });
-
-  $("btnSingleExample").addEventListener("click", () => {
-    $("singleInput").value = "xã thanh bình,huyện chợ gạo,tỉnh tiền giang";
+    const t = tachStreetVaHanhChinh(input);
+    const payload = tryConvertBest(t.admin || input);
+    renderSingle(payload, t.street);
   });
 
   $("btnCopyNewSingle").addEventListener("click", async () => {
-    const txt = lastSingle?.ok ? formatAddress(lastSingle.res.convertedAddress) : "";
+    const p = lastSingle?.payload;
+    if(!p?.ok) return;
+    const street = lastSingle.streetFromInput || "";
+    const newObj = p.res.convertedAddress || {};
+    const newOut = { ward:newObj.ward, district:newObj.district, province:newObj.province, street:street };
+    const txt = formatAddressObject(newOut);
     if(!txt) return;
     await navigator.clipboard.writeText(txt);
     setStatus($("singleStatus"), "ok", "Đã copy địa chỉ mới (1 dòng)", txt);
   });
 
   $("btnCopyOldSingle").addEventListener("click", async () => {
-    const txt = lastSingle?.ok ? formatAddress(lastSingle.res.originalAddress) : "";
+    const p = lastSingle?.payload;
+    if(!p?.ok) return;
+    const street = lastSingle.streetFromInput || "";
+    const oldObj = p.res.originalAddress || {};
+    const oldOut = { ward:oldObj.ward, district:oldObj.district, province:oldObj.province, street:street };
+    const txt = formatAddressObject(oldOut);
     if(!txt) return;
     await navigator.clipboard.writeText(txt);
     setStatus($("singleStatus"), "ok", "Đã copy địa chỉ cũ (1 dòng)", txt);
   });
 
-  $("btnCopyJsonSingle").addEventListener("click", async () => {
-    if(!lastSingle) return;
-    await navigator.clipboard.writeText(JSON.stringify(lastSingle.res, null, 2));
-    setStatus($("singleStatus"), "ok", "Đã copy JSON", "Dán JSON để debug nếu cần.");
-  });
-
-  // ----------------- BATCH actions -----------------
-  let lastBatch = null;
-
-  $("btnBatchExample").addEventListener("click", () => {
-    $("batchInput").value =
-`xa thanh binh - huyen cho gao - tinh tien giang
-phuong 12, quan go vap, tp hcm
-p.15; q.10; tp.hcm
-xã phú mỹ huyện tân phước tỉnh tiền giang`;
-  });
-
   $("btnBatch").addEventListener("click", () => {
-    if(!ready) return setStatus($("batchStatus"), "warn", "Chưa sẵn sàng", "Đang tải dữ liệu...");
-    const lines = ($("batchInput").value || "").split(/\r?\n/).map(x => normalizeSpaces(x)).filter(Boolean);
-    if(!lines.length) return setStatus($("batchStatus"), "warn", "Danh sách trống", "Mỗi dòng 1 địa chỉ.");
+    if(!ready) return setStatus($("batchStatus"), "warn", "Chưa sẵn sàng", "Đang tải dữ liệu…");
+    const lines = ($("batchInput").value || "").split(/\r?\n/).map(chuanHoaText).filter(Boolean);
+    if(!lines.length) return setStatus($("batchStatus"), "warn", "Danh sách trống", "");
 
     setStatus($("batchStatus"), "warn", "Đang xử lý…", `Đang đổi ${lines.length} dòng`);
     const rows = [];
     let okCount = 0;
 
     for(let i=0;i<lines.length;i++){
-      const oldRaw = lines[i];
-      const r = tryConvertBest(oldRaw);
-      if(r.ok) okCount++;
+      const raw = lines[i];
+      const t = tachStreetVaHanhChinh(raw);
+      const payload = tryConvertBest(t.admin || raw);
+
+      if(payload.ok) okCount++;
+
+      let oldLine = raw;
+      let newLine = "";
+      let msg = payload.ok ? "" : (payload.res?.message || "Không chuyển đổi được");
+
+      if(payload.ok){
+        const oldObj = payload.res.originalAddress || {};
+        const newObj = payload.res.convertedAddress || {};
+        const oldOut = { ward:oldObj.ward, district:oldObj.district, province:oldObj.province, street:t.street };
+        const newOut = { ward:newObj.ward, district:newObj.district, province:newObj.province, street:t.street };
+
+        oldLine = formatAddressObject(oldOut);
+        newLine = formatAddressObject(newOut);
+      }
 
       rows.push({
-        index: i+1,
-        oldLine: r.ok ? formatAddress(r.res.originalAddress) : oldRaw,
-        newLine: r.ok ? formatAddress(r.res.convertedAddress) : "",
-        success: r.ok,
-        message: r.ok ? (r.res.message || "") : (r.res?.message || "Không chuyển đổi được"),
-        used: r.used
+        index:i+1,
+        oldLine,
+        newLine,
+        success: payload.ok,
+        message: msg,
+        used: payload.used
       });
     }
 
@@ -697,62 +516,42 @@ xã phú mỹ huyện tân phước tỉnh tiền giang`;
     $("batchBody").innerHTML = rows.map(r => `
       <tr>
         <td>${r.index}</td>
-        <td>${escapeHtml(r.oldLine || r.oldRaw || "")}</td>
-        <td>${escapeHtml(r.newLine || "")}</td>
-        <td>
-          <span class="pill ${r.success ? "pillOk" : "pillFail"}">
-            ${r.success ? "OK" : "FAIL"}
-          </span>
-        </td>
+        <td>${escapeHtml(r.oldLine)}</td>
+        <td>${escapeHtml(r.newLine)}</td>
+        <td><span class="pill ${r.success ? "pillOk" : "pillFail"}">${r.success ? "OK" : "FAIL"}</span></td>
       </tr>
     `).join("");
 
     setStatus($("batchStatus"), "ok", "Xong!", `Thành công ${okCount}/${rows.length}`);
   });
 
-  $("btnCopyJsonBatch").addEventListener("click", async () => {
-    if(!lastBatch) return;
-    await navigator.clipboard.writeText(JSON.stringify(lastBatch, null, 2));
-    setStatus($("batchStatus"), "ok", "Đã copy JSON batch", "Dán JSON để debug nếu cần.");
-  });
-
   $("btnCopyNewOnly").addEventListener("click", async () => {
     if(!lastBatch) return;
     const txt = lastBatch.map(r => r.newLine || "").join("\n");
     await navigator.clipboard.writeText(txt);
-    setStatus($("batchStatus"), "ok", "Đã copy danh sách địa chỉ mới", "Mỗi dòng 1 địa chỉ.");
+    setStatus($("batchStatus"), "ok", "Đã copy danh sách địa chỉ mới", "Mỗi dòng 1 địa chỉ");
   });
 
   $("btnCopyCsv").addEventListener("click", async () => {
     if(!lastBatch) return;
     const header = ["old","new","success","message","used"];
-    const rows = [header].concat(lastBatch.map(r => [
-      r.oldLine, r.newLine, r.success, r.message, r.used
-    ]));
+    const rows = [header].concat(lastBatch.map(r => [r.oldLine, r.newLine, r.success, r.message, r.used]));
     const csv = rows.map(arr => arr.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
     await navigator.clipboard.writeText(csv);
-    setStatus($("batchStatus"), "ok", "Đã copy CSV", "Bạn dán vào Excel là ra cột.");
+    setStatus($("batchStatus"), "ok", "Đã copy CSV", "");
   });
 
-  function escapeHtml(s){
-    return (s ?? "").toString().replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[m]));
-  }
-
-  // ----------------- Tabs -----------------
+  // Tabs
   document.querySelectorAll(".tab").forEach(t => {
     t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
       t.classList.add("active");
-
       const tab = t.getAttribute("data-tab");
       $("pane-single").style.display = (tab === "single") ? "" : "none";
       $("pane-batch").style.display  = (tab === "batch")  ? "" : "none";
     });
   });
 
-  // init
   init();
 })();
 </script>
