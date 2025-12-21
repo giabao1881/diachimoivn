@@ -87,7 +87,18 @@
     }
     .pillOk{background:#dcfce7; color:#166534; border:1px solid #86efac;}
     .pillFail{background:#ffe4e6; color:#9f1239; border:1px solid #fecdd3;}
-    .mono{font-family:var(--mono);}
+
+    .foot{
+      margin-top:14px;
+      text-align:center;
+      color: rgba(15,23,42,.55);
+      font-weight:800;
+      font-size:12px;
+      user-select:none;
+    }
+    .foot b{
+      color:#0f172a;
+    }
   </style>
 </head>
 
@@ -95,7 +106,7 @@
   <div class="wrap">
     <div class="card">
       <div class="title"><div class="icon">⇄</div><div>Chuyển Đổi Địa Chỉ Cũ → Mới</div></div>
-      <div class="sub">Hàng loạt • mỗi dòng 1 địa chỉ • có giữ số nhà/đường/ấp</div>
+      <div class="sub">Hàng loạt • mỗi dòng 1 địa chỉ • giữ số nhà/đường/ấp</div>
 
       <label>Danh sách địa chỉ (mỗi dòng 1 địa chỉ):</label>
       <textarea id="batchInput" placeholder="Ví dụ:
@@ -108,7 +119,7 @@ p.15 - q.10 - tp.hcm"></textarea>
       <div class="row">
         <button class="miniBtn" id="btnCopyNewOnly">Copy địa chỉ mới (mỗi dòng 1)</button>
         <button class="miniBtn" id="btnCopyExcel">Copy dán Excel (2 cột: cũ / mới)</button>
-        <button class="miniBtn" id="btnCopyCsv">Copy CSV (old,new,success,message)</button>
+        <button class="miniBtn" id="btnCopyResult">Copy kết quả đang hiển thị</button>
       </div>
 
       <div class="box">
@@ -143,6 +154,7 @@ p.15 - q.10 - tp.hcm"></textarea>
         </div>
       </div>
 
+      <div class="foot">Tạo bởi <b>baotg10</b></div>
     </div>
   </div>
 
@@ -238,6 +250,20 @@ p.15 - q.10 - tp.hcm"></textarea>
     return s.split(" ").map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ");
   }
 
+  // ✅ Tự thêm "Tỉnh/Thành phố" nếu thiếu
+  function chuanHoaTinhTP(province){
+    let p = chuanHoaText(province);
+    if(!p) return "";
+    const lower = boDauTiengViet(p).toLowerCase();
+
+    if (/\b(tinh|thanh\s*pho)\b/.test(lower)) return vietHoaDauTu(p);
+
+    const tpTW = ["ha noi","ho chi minh","hai phong","da nang","can tho"];
+    const isTp = tpTW.some(x => lower.includes(x));
+
+    return isTp ? vietHoaDauTu("Thành phố " + p) : vietHoaDauTu("Tỉnh " + p);
+  }
+
   function formatAddressObject(obj){
     if(!obj || typeof obj !== "object") return "";
     const ward = chuanHoaText(obj.ward);
@@ -249,7 +275,7 @@ p.15 - q.10 - tp.hcm"></textarea>
     if(street) parts.push(vietHoaDauTu(street));
     if(ward) parts.push(vietHoaDauTu(ward));
     if(district) parts.push(vietHoaDauTu(district));
-    if(province) parts.push(vietHoaDauTu(province));
+    if(province) parts.push(chuanHoaTinhTP(province));
     return parts.join(", ");
   }
 
@@ -365,7 +391,6 @@ p.15 - q.10 - tp.hcm"></textarea>
     setStatus("ok", "Đã copy địa chỉ mới", "Mỗi dòng 1 địa chỉ");
   });
 
-  // ✅ Copy dán Excel: 2 cột (cũ<TAB>mới) mỗi dòng
   $("btnCopyExcel").addEventListener("click", async () => {
     if(!lastBatch) return;
     const txt = lastBatch.map(r => `${r.oldLine}\t${r.newLine}`).join("\n");
@@ -373,13 +398,14 @@ p.15 - q.10 - tp.hcm"></textarea>
     setStatus("ok", "Đã copy dạng Excel", "Dán vào Excel sẽ ra 2 cột: Cũ | Mới");
   });
 
-  $("btnCopyCsv").addEventListener("click", async () => {
+  // ✅ Copy đúng cái bảng đang hiển thị (4 cột: #, cũ, mới, trạng thái)
+  $("btnCopyResult").addEventListener("click", async () => {
     if(!lastBatch) return;
-    const header = ["old","new","success","message","used"];
-    const rows = [header].concat(lastBatch.map(r => [r.oldLine, r.newLine, r.success, r.message, r.used]));
-    const csv = rows.map(arr => arr.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
-    await navigator.clipboard.writeText(csv);
-    setStatus("ok", "Đã copy CSV", "");
+    const header = "#\tĐịa chỉ cũ\tĐịa chỉ mới\tTrạng thái";
+    const body = lastBatch.map(r => `${r.index}\t${r.oldLine}\t${r.newLine}\t${r.success ? "OK" : "FAIL"}`).join("\n");
+    const txt = header + "\n" + body;
+    await navigator.clipboard.writeText(txt);
+    setStatus("ok", "Đã copy bảng kết quả", "Bạn có thể dán vào Excel/Sheets");
   });
 
   init();
@@ -387,3 +413,4 @@ p.15 - q.10 - tp.hcm"></textarea>
 </script>
 </body>
 </html>
+
